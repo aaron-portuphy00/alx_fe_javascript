@@ -32,6 +32,7 @@ function showRandomQuote() {
 function createAddQuoteForm() {
   const formContainer = document.getElementById('formContainer');
   
+  // Use innerHTML to generate the form for adding a new quote
   formContainer.innerHTML = `
     <h3>Add a New Quote</h3>
     <div>
@@ -85,6 +86,7 @@ function populateCategories() {
   
   const categories = [...new Set(quotes.map(q => q.category))]; // Get unique categories
   categories.forEach(category => {
+    // Use innerHTML to add new options
     categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
   });
 }
