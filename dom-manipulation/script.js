@@ -1,11 +1,13 @@
+const SERVER_URL = 'https://jsonplaceholder.typicode.com/posts'; // Simulated server endpoint
+
 // Array to store quotes (loaded from localStorage or default values)
 let quotes = [
   { text: "The only limit to our realization of tomorrow is our doubts of today.", category: "Motivation" },
   { text: "Life is 10% what happens to us and 90% how we react to it.", category: "Life" }
 ];
 
-// Load quotes and categories from localStorage on page load
-window.onload = () => {
+// Load quotes from localStorage on page load and sync with server
+window.onload = async () => {
   loadQuotes();
   populateCategories();
   showRandomQuote(); // Show a random quote on page load
@@ -16,22 +18,41 @@ window.onload = () => {
   document.getElementById('exportButton').addEventListener('click', exportToJsonFile);
   document.getElementById('importFile').addEventListener('change', importFromJsonFile);
   document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
+
+  // Start periodic syncing with the server
+  setInterval(syncWithServer, 5000); // Sync with server every 5 seconds
 };
 
-// Show a random quote
-function showRandomQuote() {
-  const quoteDisplay = document.getElementById('quoteDisplay');
-  
-  if (quotes.length === 0) {
-    quoteDisplay.innerHTML = '<p>No quotes available.</p>';
-    return;
+// Fetch data from the server
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(SERVER_URL);
+    if (!response.ok) {
+      throw new Error('Failed to fetch data from the server');
+    }
+    const serverQuotes = await response.json();
+    return serverQuotes.slice(0, 10); // Simulate limited results
+  } catch (error) {
+    console.error(error);
+    return [];
   }
-  
-  const randomIndex = Math.floor(Math.random() * quotes.length);
-  const randomQuote = quotes[randomIndex];
-  
-  // Display the random quote
-  quoteDisplay.innerHTML = `<p>"${randomQuote.text}" - <strong>${randomQuote.category}</strong></p>`;
+}
+
+// Sync local data with server
+async function syncWithServer() {
+  const serverQuotes = await fetchQuotesFromServer();
+  const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+
+  // Conflict resolution: If server data has more quotes, update local storage
+  if (serverQuotes.length > localQuotes.length) {
+    quotes = [...serverQuotes]; // Update local quotes with server data
+    saveQuotes();
+    populateCategories();
+    console.log('Quotes updated from server');
+    alert('Quotes have been updated from the server!');
+  } else {
+    console.log('Local data is up-to-date');
+  }
 }
 
 // Save quotes to localStorage every time a new quote is added
@@ -57,16 +78,37 @@ function addQuote() {
     quotes.push(newQuote);
     
     saveQuotes(); // Save updated quotes to localStorage
+    syncToServer(newQuote); // Sync the new quote to the server
 
     // Clear input fields
     document.getElementById('newQuoteText').value = '';
     document.getElementById('newQuoteCategory').value = '';
 
     // Update categories and show the new quote added
-    populateCategories(); // Dynamically update categories
+    populateCategories();
     showRandomQuote();
   } else {
     alert('Please enter both a quote and a category.');
+  }
+}
+
+// Sync a new quote to the server
+async function syncToServer(newQuote) {
+  try {
+    const response = await fetch(SERVER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newQuote),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to sync new quote with the server');
+    }
+    const result = await response.json();
+    console.log('Quote synced to server:', result);
+  } catch (error) {
+    console.error('Error syncing with server:', error);
   }
 }
 
