@@ -4,18 +4,18 @@ let quotes = [
     { text: "Life is 10% what happens to us and 90% how we react to it.", category: "Life" }
   ];
   
-  // Show a random quote
-  function showRandomQuote() {
-    const quoteDisplay = document.getElementById('quoteDisplay');
-    if (quotes.length === 0) {
-      quoteDisplay.innerText = 'No quotes available.';
-      return;
-    }
-    
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    const randomQuote = quotes[randomIndex];
-    quoteDisplay.innerText = `"${randomQuote.text}" - ${randomQuote.category}`;
+ // Show a random quote
+function showRandomQuote() {
+  const quoteDisplay = document.getElementById('quoteDisplay');
+  if (quotes.length === 0) {
+    quoteDisplay.textContent = 'No quotes available.';
+    return;
   }
+  
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  const randomQuote = quotes[randomIndex];
+  quoteDisplay.textContent = `"${randomQuote.text}" - ${randomQuote.category}`;
+}
   
   // Event listener for the "Show New Quote" button
   document.getElementById('newQuote').addEventListener('click', showRandomQuote);
