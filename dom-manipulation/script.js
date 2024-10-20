@@ -60,6 +60,10 @@ async function syncQuotes() {
   } else {
     console.log('Quotes are already in sync');
   }
+
+  // After syncing, notify the user
+  console.log("Quotes synced with server!");
+  alert("Quotes synced with server!");
 }
 
 // Post a new quote to the server
