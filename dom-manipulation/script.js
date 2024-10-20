@@ -12,7 +12,7 @@ window.onload = () => {
   createAddQuoteForm(); // Dynamically create the form on page load
 };
 
-// Show a random quote using innerHTML
+// Show a random quote
 function showRandomQuote() {
   const quoteDisplay = document.getElementById('quoteDisplay');
   
@@ -28,22 +28,38 @@ function showRandomQuote() {
   quoteDisplay.innerHTML = `<p>"${randomQuote.text}" - <strong>${randomQuote.category}</strong></p>`;
 }
 
-// Create and dynamically add the quote form
+// Create and dynamically add the quote form using appendChild
 function createAddQuoteForm() {
   const formContainer = document.getElementById('formContainer');
   
-  // Use innerHTML to generate the form for adding a new quote
-  formContainer.innerHTML = `
-    <h3>Add a New Quote</h3>
-    <div>
-      <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-      <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-      <button onclick="addQuote()">Add Quote</button>
-    </div>
-  `;
+  const formTitle = document.createElement('h3');
+  formTitle.textContent = 'Add a New Quote';
+  formContainer.appendChild(formTitle);
+  
+  const formDiv = document.createElement('div');
+  
+  const quoteInput = document.createElement('input');
+  quoteInput.id = 'newQuoteText';
+  quoteInput.type = 'text';
+  quoteInput.placeholder = 'Enter a new quote';
+  
+  const categoryInput = document.createElement('input');
+  categoryInput.id = 'newQuoteCategory';
+  categoryInput.type = 'text';
+  categoryInput.placeholder = 'Enter quote category';
+  
+  const addButton = document.createElement('button');
+  addButton.textContent = 'Add Quote';
+  addButton.onclick = addQuote; // Set the onclick event to addQuote
+  
+  formDiv.appendChild(quoteInput);
+  formDiv.appendChild(categoryInput);
+  formDiv.appendChild(addButton);
+  
+  formContainer.appendChild(formDiv);
 }
 
-// Add a new quote using innerHTML
+// Add a new quote and update the DOM
 function addQuote() {
   const newQuoteText = document.getElementById('newQuoteText').value.trim();
   const newQuoteCategory = document.getElementById('newQuoteCategory').value.trim();
@@ -79,19 +95,26 @@ function loadQuotes() {
   }
 }
 
-// Populate the category filter dynamically using innerHTML
+// Populate the category filter dynamically using appendChild
 function populateCategories() {
   const categoryFilter = document.getElementById('categoryFilter');
-  categoryFilter.innerHTML = '<option value="all">All Categories</option>'; // Clear previous options
+  categoryFilter.innerHTML = ''; // Clear previous options
+  
+  const allOption = document.createElement('option');
+  allOption.value = 'all';
+  allOption.textContent = 'All Categories';
+  categoryFilter.appendChild(allOption);
   
   const categories = [...new Set(quotes.map(q => q.category))]; // Get unique categories
   categories.forEach(category => {
-    // Use innerHTML to add new options
-    categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
   });
 }
 
-// Filter quotes based on the selected category using innerHTML
+// Filter quotes based on the selected category
 function filterQuotes() {
   const selectedCategory = document.getElementById('categoryFilter').value;
   const quoteDisplay = document.getElementById('quoteDisplay');
