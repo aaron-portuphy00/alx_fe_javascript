@@ -6,7 +6,7 @@ let quotes = [
   { text: "Life is 10% what happens to us and 90% how we react to it.", category: "Life" }
 ];
 
-// Load quotes from localStorage on page load and sync with server
+// Load quotes and categories from localStorage on page load and sync with server
 window.onload = async () => {
   loadQuotes();
   populateCategories();
@@ -19,8 +19,9 @@ window.onload = async () => {
   document.getElementById('importFile').addEventListener('change', importFromJsonFile);
   document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
 
-  // Start periodic syncing with the server
-  setInterval(syncWithServer, 5000); // Sync with server every 5 seconds
+  // Sync quotes with the server on load and periodically
+  await syncQuotes();
+  setInterval(syncQuotes, 5000); // Sync with server every 5 seconds
 };
 
 // Fetch data from the server
@@ -38,20 +39,46 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// Sync local data with server
-async function syncWithServer() {
+// Sync quotes between local storage and server
+async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
 
-  // Conflict resolution: If server data has more quotes, update local storage
+  // Compare server and local quotes, handle conflict resolution
   if (serverQuotes.length > localQuotes.length) {
-    quotes = [...serverQuotes]; // Update local quotes with server data
+    console.log('Updating local quotes from server...');
+    quotes = [...serverQuotes]; // Server data takes precedence
     saveQuotes();
     populateCategories();
-    console.log('Quotes updated from server');
-    alert('Quotes have been updated from the server!');
+    alert('Quotes updated from server!');
+  } else if (localQuotes.length > serverQuotes.length) {
+    console.log('Posting new local quotes to server...');
+    const newLocalQuotes = localQuotes.slice(serverQuotes.length); // Find new quotes not on the server
+    for (const quote of newLocalQuotes) {
+      await postQuoteToServer(quote);
+    }
   } else {
-    console.log('Local data is up-to-date');
+    console.log('Quotes are already in sync');
+  }
+}
+
+// Post a new quote to the server
+async function postQuoteToServer(newQuote) {
+  try {
+    const response = await fetch(SERVER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newQuote),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to sync new quote with the server');
+    }
+    const result = await response.json();
+    console.log('Quote synced to server:', result);
+  } catch (error) {
+    console.error('Error syncing with server:', error);
   }
 }
 
@@ -78,7 +105,7 @@ function addQuote() {
     quotes.push(newQuote);
     
     saveQuotes(); // Save updated quotes to localStorage
-    syncToServer(newQuote); // Sync the new quote to the server
+    syncQuotes(); // Sync with the server after adding a new quote
 
     // Clear input fields
     document.getElementById('newQuoteText').value = '';
@@ -89,26 +116,6 @@ function addQuote() {
     showRandomQuote();
   } else {
     alert('Please enter both a quote and a category.');
-  }
-}
-
-// Sync a new quote to the server
-async function syncToServer(newQuote) {
-  try {
-    const response = await fetch(SERVER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newQuote),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to sync new quote with the server');
-    }
-    const result = await response.json();
-    console.log('Quote synced to server:', result);
-  } catch (error) {
-    console.error('Error syncing with server:', error);
   }
 }
 
