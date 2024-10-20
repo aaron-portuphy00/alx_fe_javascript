@@ -12,7 +12,7 @@ window.onload = () => {
   createAddQuoteForm(); // Dynamically create the form on page load
 };
 
-// Show a random quote
+// Show a random quote using innerHTML
 function showRandomQuote() {
   const quoteDisplay = document.getElementById('quoteDisplay');
   
@@ -50,7 +50,9 @@ function createAddQuoteForm() {
   
   const addButton = document.createElement('button');
   addButton.textContent = 'Add Quote';
-  addButton.onclick = addQuote; // Set the onclick event to addQuote
+  
+  // Set addEventListener for the add button
+  addButton.addEventListener('click', addQuote);
   
   formDiv.appendChild(quoteInput);
   formDiv.appendChild(categoryInput);
@@ -112,6 +114,9 @@ function populateCategories() {
     option.textContent = category;
     categoryFilter.appendChild(option);
   });
+
+  // Set addEventListener for the category filter onchange event
+  categoryFilter.addEventListener('change', filterQuotes);
 }
 
 // Filter quotes based on the selected category
